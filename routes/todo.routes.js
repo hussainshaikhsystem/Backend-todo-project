@@ -1,11 +1,14 @@
 import express from "express";
 import { createtodo, deletetodo, gettodos, gettodowithid, patchtodo, updatetodo } from "../controllers/todo.controller.js";
+import authmiddleware from "../middlewares/auth.middleware.js";
 const route = express.Router();
 
-route.get('/todo',gettodos);
-route.get('/todo/:id',gettodowithid);
-route.put('/todo/:id',updatetodo);
-route.delete('/todo/:id',deletetodo);
-route.patch('/todo/:id/complete',patchtodo);
-route.post('/todo', createtodo)
+route.use(authmiddleware);
+
+route.get('/',gettodos);
+route.get('/:id',gettodowithid);
+route.put('/:id',updatetodo);
+route.delete('/:id',deletetodo);
+route.patch('/:id/complete',patchtodo);
+route.post('/', createtodo)
 export default route;

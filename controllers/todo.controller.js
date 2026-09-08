@@ -5,7 +5,7 @@ import { asynchandler } from "../middlewares/asynchandler.js";
 export const createtodo = asynchandler (async (req, res) => {
   
     const { title, description, iscompleted } = req.body;
-    const todo = await todoModel.create({ title, description, iscompleted });
+    const todo = await todoModel.create({ title, description, iscompleted , user: req.userId});
 
     res.status(201).json({ message: "task added successfully", todo });
   
@@ -17,7 +17,7 @@ export const gettodos = asynchandler(async (req, res) => {
     // Query param
     const { search, sort, page = 1, limit = 10 } = req.query;
     // Base query
-    let query = {};
+    let query = {user: req.userId};
 
     // search by title
     if(search){
@@ -62,7 +62,7 @@ export const gettodowithid = asynchandler(async (req, res, next) => {
       })
     }
   
-    const todo = await todoModel.findById(id);
+    const todo = await todoModel.findOne({ _id: id, user: req.userId });
     if (!todo) {
       const error = new Error("there is no todo with this specific id in db");
   error.statuscode = 404;
@@ -75,9 +75,9 @@ export const gettodowithid = asynchandler(async (req, res, next) => {
 // put api
 export const updatetodo = asynchandler(   async (req, res, next) => {
 
-    const newtodo = req.body;
+    const {title, description, iscompleted}= req.body;
     const id = req.params.id;
-    const updatedtodo = await todoModel.findByIdAndUpdate(id, newtodo, {
+    const updatedtodo = await todoModel.findOneAndUpdate({ _id: id, user: req.userId },{ title, description, iscompleted }, {
       new: true,
       runValidators: true,
     });
@@ -93,7 +93,7 @@ export const updatetodo = asynchandler(   async (req, res, next) => {
 export const patchtodo = asynchandler(    async (req, res, next) => {
 
     const id = req.params.id;
-    const todo = await todoModel.findById(id);
+    const todo = await todoModel.findOne({ _id: id, user: req.userId });
     if (!todo) {
       const error = new Error("there is no todo with this specific id in db");
       error.statuscode = 404;
@@ -110,7 +110,7 @@ export const patchtodo = asynchandler(    async (req, res, next) => {
 export const deletetodo = asynchandler(async (req, res, next) => {
  
     const id = req.params.id;
-    const deletetodo = await todoModel.findByIdAndDelete(id);
+    const deletetodo = await todoModel.findOneAndDelete({ _id: id, user: req.userId });
     if (!deletetodo) {
       const error = new Error("there is no todo with this specific id in db");
       error.statuscode = 404;
